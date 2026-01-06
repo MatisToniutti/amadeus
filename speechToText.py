@@ -29,4 +29,5 @@ def speechToText(audio):
 if __name__ == "__main__":
     sampleEn = "./samples/en.mp3"
     sampleFr = "./samples/fr.mp3"
-    print(speechToText(sampleEn))
+    law = "./samples/shortLawVoice.mp3"
+    print(speechToText(law))
