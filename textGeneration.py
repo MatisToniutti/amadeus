@@ -1,7 +1,16 @@
 from transformers import AutoTokenizer, BitsAndBytesConfig, Gemma3ForCausalLM
 import torch
+from dotenv import load_dotenv
+import os
+
+
 
 def textGeneration(prompt):
+    # Charge les variables du fichier .env
+    load_dotenv()
+
+    token = os.getenv("HF_TOKEN")
+
     model_id = "google/gemma-3-1b-it"
     quantization_config = BitsAndBytesConfig(load_in_8bit=True)
 
@@ -30,6 +39,7 @@ def textGeneration(prompt):
         tokenize=True,
         return_dict=True,
         return_tensors="pt",
+        token=token,
     ).to(model.device).to(torch.bfloat16)
 
     with torch.inference_mode():

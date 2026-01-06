@@ -24,7 +24,7 @@ def speechToText(audio):
     )
 
     result = pipe(audio, batch_size=2)
-    return result
+    return result["text"]
 
 if __name__ == "__main__":
     sampleEn = "./samples/en.mp3"
