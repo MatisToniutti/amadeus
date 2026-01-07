@@ -6,10 +6,12 @@ import os
 def load_TG_model():
 
     model_id = "google/gemma-3-1b-it"
-    quantization_config = BitsAndBytesConfig(load_in_8bit=True)
+    #quantization_config = BitsAndBytesConfig(load_in_8bit=True)
 
     model = Gemma3ForCausalLM.from_pretrained(
-        model_id, quantization_config=quantization_config
+        model_id, # quantization_config=quantization_config
+        dtype=torch.bfloat16,
+        device_map="auto"
     ).eval()
 
     return model
@@ -45,10 +47,12 @@ def textGeneration(prompt, model, tokenizer):
         return_dict=True,
         return_tensors="pt",
         token=token,
-    ).to(model.device).to(torch.bfloat16)
+    ).to(model.device)
 
     with torch.inference_mode():
-        outputs = model.generate(**inputs, max_new_tokens=128)
+        outputs = model.generate(**inputs, 
+                                 max_new_tokens=128,
+                                 use_cache=True)
 
     generated_tokens = outputs[0][inputs.input_ids.shape[-1]:]
 

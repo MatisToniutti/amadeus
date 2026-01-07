@@ -66,13 +66,18 @@ def record_audio():
 def main():
     chat_history = []
 
+    print("chargement des modèles")
+
     STT_model = load_STT_model()
     STT_processor = load_STT_processor()
+    print("STT chargé")
 
     TG_model = load_TG_model()
     TG_tokenizer = load_TG_tokenizer()
+    print("TG chargé")
 
     TTS_model = load_TTS_model()
+    print("TTS chargé")
 
     print("Système Amadeus activé.")
     print("Appuyez sur Ctrl+C pour arrêter.")
