@@ -6,7 +6,7 @@ import os
 import librosa
 from speechToText import speechToText, load_STT_model, load_STT_processor
 from textGeneration import textGeneration, load_TG_model, load_TG_tokenizer
-from textToSpeech import textToSpeech
+from textToSpeech import textToSpeech, load_TTS_model
 import time
 
 def play_audio(filename):
@@ -72,6 +72,8 @@ def main():
     TG_model = load_TG_model()
     TG_tokenizer = load_TG_tokenizer()
 
+    TTS_model = load_TTS_model()
+
     print("Système Amadeus activé.")
     print("Appuyez sur Ctrl+C pour arrêter.")
 
@@ -98,7 +100,7 @@ def main():
 
             # 4. Text to Speech
             start_tts = time.perf_counter()
-            textToSpeech(law_response)
+            textToSpeech(law_response, TTS_model)
             end_tts = time.perf_counter()
             
             print(f"Génération Audio : {end_tts - start_tts:.2f}s\n")
