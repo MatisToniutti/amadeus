@@ -4,9 +4,10 @@ import numpy as np
 from scipy.io.wavfile import write
 import os
 import librosa
-from speechToText import speechToText
+from speechToText import speechToText, load_STT_model, load_STT_processor
 from textGeneration import textGeneration
 from textToSpeech import textToSpeech
+import time
 
 def play_audio(filename):
     """Lecture simple d'un fichier audio"""
@@ -64,6 +65,8 @@ def record_audio():
 
 def main():
     chat_history = []
+    STT_model = load_STT_model()
+    STT_processor = load_STT_processor()
     print("Système Amadeus activé.")
     print("Appuyez sur Ctrl+C pour arrêter.")
 
@@ -71,22 +74,36 @@ def main():
         while True:
             # 1. Écoute
             audio_path = record_audio()
-            if not audio_path: continue
 
             # 2. Speech to Text
-            user_text = speechToText(audio_path)
-            print("Toi : " + user_text)
+            start_stt = time.perf_counter()
+            user_text = speechToText(audio = audio_path, model = STT_model, processor = STT_processor)
+            end_stt = time.perf_counter()
+            
+            print(f"Toi : {user_text} ({end_stt - start_stt:.2f}s)\n")
+            
             if user_text.strip() == "": break
 
             # 3. Text Generation
+            start_llm = time.perf_counter()
             law_response = textGeneration(user_text)
-            print("Law : " + law_response)
+            end_llm = time.perf_counter()
+            
+            print(f"Law : {law_response} ({end_llm - start_llm:.2f}s)\n")
 
             # 4. Text to Speech
+            start_tts = time.perf_counter()
             textToSpeech(law_response)
+            end_tts = time.perf_counter()
+            
+            print(f"Génération Audio : {end_tts - start_tts:.2f}s\n")
 
             # 5. Lecture de la réponse
             play_audio("results/testLaw.wav")
+            
+            # Total
+            total_latency = (end_stt - start_stt) + (end_llm - start_llm) + (end_tts - start_tts)
+            print(f"Temps de réponse total de Law : {total_latency:.2f}s\n\n")
 
     except KeyboardInterrupt:
         print("\nAmadeus s'éteint. Au revoir, Chapeau de paille.")
