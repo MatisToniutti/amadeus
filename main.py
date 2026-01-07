@@ -5,7 +5,7 @@ from scipy.io.wavfile import write
 import os
 import librosa
 from speechToText import speechToText, load_STT_model, load_STT_processor
-from textGeneration import textGeneration
+from textGeneration import textGeneration, load_TG_model, load_TG_tokenizer
 from textToSpeech import textToSpeech
 import time
 
@@ -65,8 +65,13 @@ def record_audio():
 
 def main():
     chat_history = []
+
     STT_model = load_STT_model()
     STT_processor = load_STT_processor()
+
+    TG_model = load_TG_model()
+    TG_tokenizer = load_TG_tokenizer()
+
     print("Système Amadeus activé.")
     print("Appuyez sur Ctrl+C pour arrêter.")
 
@@ -86,7 +91,7 @@ def main():
 
             # 3. Text Generation
             start_llm = time.perf_counter()
-            law_response = textGeneration(user_text)
+            law_response = textGeneration(user_text, model = TG_model, tokenizer= TG_tokenizer)
             end_llm = time.perf_counter()
             
             print(f"Law : {law_response} ({end_llm - start_llm:.2f}s)\n")

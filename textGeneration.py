@@ -3,13 +3,7 @@ import torch
 from dotenv import load_dotenv
 import os
 
-
-
-def textGeneration(prompt):
-    # Charge les variables du fichier .env
-    load_dotenv()
-
-    token = os.getenv("HF_TOKEN")
+def load_TG_model():
 
     model_id = "google/gemma-3-1b-it"
     quantization_config = BitsAndBytesConfig(load_in_8bit=True)
@@ -18,7 +12,18 @@ def textGeneration(prompt):
         model_id, quantization_config=quantization_config
     ).eval()
 
+    return model
+
+def load_TG_tokenizer():
+    model_id = "google/gemma-3-1b-it"
     tokenizer = AutoTokenizer.from_pretrained(model_id)
+    return tokenizer
+
+def textGeneration(prompt, model, tokenizer):
+    # Charge les variables du fichier .env
+    load_dotenv()
+
+    token = os.getenv("HF_TOKEN")
 
     messages = [
         [
