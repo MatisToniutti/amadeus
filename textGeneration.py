@@ -79,7 +79,7 @@ def load_TG_tokenizer():
     processor = AutoProcessor.from_pretrained(model_id)
     return processor
 
-def textGeneration(prompt, model, tokenizer, chat_history):
+def textGeneration(prompt, model, tokenizer, chat_history, img):
     # Charge les variables du fichier .env
     load_dotenv()
 
@@ -103,7 +103,7 @@ def textGeneration(prompt, model, tokenizer, chat_history):
             {
                 "role": "user",
                 "content": [
-                    {"type": "image", "url": "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/p-blog/candy.JPG"},
+                    {"type": "image", "url": img},
                     {"type": "text", "text": prompt},
                             ]
             },

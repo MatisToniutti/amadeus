@@ -8,6 +8,8 @@ from speechToText import speechToText, load_STT_model, load_STT_processor
 from textGeneration import textGeneration, load_TG_model, load_TG_tokenizer
 from textToSpeech import textToSpeech, load_TTS_model
 import time
+import mss
+from PIL import Image
 
 def play_audio(filename):
     """Lecture simple d'un fichier audio"""
@@ -81,6 +83,20 @@ def record_audio():
     
     return filename
 
+def take_screenshot():
+    with mss.mss() as sct:
+        # Capture l'écran principal
+        monitor = sct.monitors[1]
+        sct_img = sct.grab(monitor)
+        
+        # Convertir en image PIL
+        img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+        
+        # essayer de resize /2 voir si ça va plus vite et c'est ok
+        img.thumbnail((896, 896))
+                
+        img.save("results/last_screenshot.jpg")
+        return "results/last_screenshot.jpg"
 
 def main():
     chat_history = []
@@ -103,6 +119,9 @@ def main():
 
     try:
         while True:
+            # capture d'écran
+            screenshot = take_screenshot()
+
             # 1. Écoute
             audio_path = record_audio()
 
@@ -117,7 +136,7 @@ def main():
 
             # 3. Text Generation
             start_llm = time.perf_counter()
-            law_response = textGeneration(user_text, model = TG_model, tokenizer= TG_tokenizer, chat_history=chat_history)
+            law_response = textGeneration(user_text, model = TG_model, tokenizer= TG_tokenizer, chat_history=chat_history, img = screenshot)
             end_llm = time.perf_counter()
             
             print(f"Law : {law_response} ({end_llm - start_llm:.2f}s)\n")
