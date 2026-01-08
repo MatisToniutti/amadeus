@@ -79,11 +79,16 @@ def load_TG_tokenizer():
     processor = AutoProcessor.from_pretrained(model_id)
     return processor
 
-def textGeneration(prompt, model, tokenizer):
+def textGeneration(prompt, model, tokenizer, chat_history):
     # Charge les variables du fichier .env
     load_dotenv()
 
     token = os.getenv("HF_TOKEN")
+    history_prompt = ""
+    if len(chat_history)>0:
+        history_prompt = "here is the previous interaction you've had with the user : "
+        for text in chat_history:
+            history_prompt += text + '\n'
 
     messages = [
         [
@@ -92,8 +97,8 @@ def textGeneration(prompt, model, tokenizer):
                 "content": [{"type": "text", "text":"""
                              You are Trafalgar Law from One Piece under the effects of the Shiku Shiku no Mi, you are my personnal desktop assistant. IMPORTANT CONSTRAINTS: Write ONLY the spoken dialogue.
                             NEVER include descriptions of your actions, tone of voice, or surroundings (no parentheses or asterisks).
-                            Keep your responses concise and cynical, as per Law's personality.
-                            Do not use emojis or stage directions."""}]
+                            Keep your responses concise and cynical, as per Law's personality, but follow the orders like a good assistant.
+                            Do not use emojis or stage directions.""" + history_prompt }]
             },
             {
                 "role": "user",

@@ -117,7 +117,7 @@ def main():
 
             # 3. Text Generation
             start_llm = time.perf_counter()
-            law_response = textGeneration(user_text, model = TG_model, tokenizer= TG_tokenizer)
+            law_response = textGeneration(user_text, model = TG_model, tokenizer= TG_tokenizer, chat_history=chat_history)
             end_llm = time.perf_counter()
             
             print(f"Law : {law_response} ({end_llm - start_llm:.2f}s)\n")
@@ -135,6 +135,9 @@ def main():
             # Total
             total_latency = (end_stt - start_stt) + (end_llm - start_llm) + (end_tts - start_tts)
             print(f"Temps de réponse total de Law : {total_latency:.2f}s\n\n")
+
+            chat_history.append("User : "+user_text)
+            chat_history.append("You (Law) : "+law_response)
 
     except KeyboardInterrupt:
         print("\nAmadeus s'éteint")
