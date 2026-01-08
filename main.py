@@ -10,6 +10,8 @@ from textToSpeech import textToSpeech, load_TTS_model
 import time
 import mss
 from PIL import Image
+import customtkinter as ctk
+import threading
 
 def play_audio(filename):
     """Lecture simple d'un fichier audio"""
@@ -26,8 +28,8 @@ def record_audio():
     target_fs = 16000
     filename = "results/input_user.wav"
     
-    print("\n--- PRÊT À ÉCOUTER ---")
-    input("Appuyez sur ENTRÉE pour commencer à parler...")
+    # print("\n--- PRÊT À ÉCOUTER ---")
+    # input("Appuyez sur ENTRÉE pour commencer à parler...")
 
     recording = []
     # Paramètres de détection
@@ -98,41 +100,122 @@ def take_screenshot():
         img.save("results/last_screenshot.jpg")
         return "results/last_screenshot.jpg"
 
-def main():
-    chat_history = []
+# def main():
+#     chat_history = []
 
-    print("chargement des modèles")
+#     print("chargement des modèles")
 
-    STT_model = load_STT_model()
-    STT_processor = load_STT_processor()
-    print("STT chargé")
+#     STT_model = load_STT_model()
+#     STT_processor = load_STT_processor()
+#     print("STT chargé")
 
-    TG_model = load_TG_model()
-    TG_tokenizer = load_TG_tokenizer()
-    print("TG chargé")
+#     TG_model = load_TG_model()
+#     TG_tokenizer = load_TG_tokenizer()
+#     print("TG chargé")
 
-    TTS_model = load_TTS_model()
-    print("TTS chargé")
+#     TTS_model = load_TTS_model()
+#     print("TTS chargé")
 
-    print("Système Amadeus activé.")
-    print("Appuyez sur Ctrl+C pour arrêter.")
+#     print("Système Amadeus activé.")
+#     print("Appuyez sur Ctrl+C pour arrêter.")
 
-    try:
-        while True:
+#     try:
+#         while True:
+#             # capture d'écran
+#             screenshot = take_screenshot()
+
+#             # 1. Écoute
+#             audio_path = record_audio()
+
+#             # 2. Speech to Text
+#             start_stt = time.perf_counter()
+#             user_text = speechToText(audio = audio_path, model = STT_model, processor = STT_processor)
+#             end_stt = time.perf_counter()
+            
+#             print(f"Toi : {user_text} ({end_stt - start_stt:.2f}s)\n")
+            
+#             if user_text.strip() == "": break
+
+#             # 3. Text Generation
+#             start_llm = time.perf_counter()
+#             law_response = textGeneration(user_text, model = TG_model, tokenizer= TG_tokenizer, chat_history=chat_history, img = screenshot)
+#             end_llm = time.perf_counter()
+            
+#             print(f"Law : {law_response} ({end_llm - start_llm:.2f}s)\n")
+
+#             # 4. Text to Speech
+#             start_tts = time.perf_counter()
+#             textToSpeech(law_response, TTS_model)
+#             end_tts = time.perf_counter()
+            
+#             print(f"Génération Audio : {end_tts - start_tts:.2f}s\n")
+
+#             # 5. Lecture de la réponse
+#             play_audio("results/testLaw.wav")
+            
+#             # Total
+#             total_latency = (end_stt - start_stt) + (end_llm - start_llm) + (end_tts - start_tts)
+#             print(f"Temps de réponse total de Law : {total_latency:.2f}s\n\n")
+
+#             chat_history.append("User : "+user_text)
+#             chat_history.append("You (Law) : "+law_response)
+
+#     except KeyboardInterrupt:
+#         print("\nAmadeus s'éteint")
+
+class LawAssistantGUI(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+
+        self.title("Amadeus - Law Desktop Pet")
+        self.geometry("400x600")
+        
+        # --- État du Bot ---
+        self.status = "Prêt" # "Écoute", "Réflexion", "Parle"
+        
+        # --- Interface ---
+        self.label_status = ctk.CTkLabel(self, text=f"État : {self.status}", font=("Helvetica", 18))
+        self.label_status.pack(pady=20)
+
+        # Bouton Principal (On l'utilisera pour déclencher la boucle)
+        self.btn_talk = ctk.CTkButton(self, text="PARLER (ESPACE)", command=self.start_conversation_thread)
+        self.btn_talk.pack(pady=20)
+
+        # Indicateur visuel (Le futur logo)
+        self.indicator = ctk.CTkFrame(self, width=50, height=50, fg_color="green")
+        self.indicator.pack(pady=10)
+
+        # Bind de la touche Espace
+        self.bind('<space>', lambda event: self.start_conversation_thread())
+
+    def update_status(self, new_status, color):
+        self.status = new_status
+        self.label_status.configure(text=f"État : {self.status}")
+        self.indicator.configure(fg_color=color)
+
+    def start_conversation_thread(self):
+        # On lance la logique IA dans un thread séparé pour ne pas bloquer la fenêtre
+        thread = threading.Thread(target=self.run_logic)
+        thread.start()
+
+    def run_logic(self):
+        try:
             # capture d'écran
             screenshot = take_screenshot()
 
             # 1. Écoute
+            self.update_status("Écoute...", "red")
             audio_path = record_audio()
+            
 
             # 2. Speech to Text
             start_stt = time.perf_counter()
+            self.update_status("Réflexion...", "orange")
             user_text = speechToText(audio = audio_path, model = STT_model, processor = STT_processor)
             end_stt = time.perf_counter()
             
             print(f"Toi : {user_text} ({end_stt - start_stt:.2f}s)\n")
             
-            if user_text.strip() == "": break
 
             # 3. Text Generation
             start_llm = time.perf_counter()
@@ -149,6 +232,7 @@ def main():
             print(f"Génération Audio : {end_tts - start_tts:.2f}s\n")
 
             # 5. Lecture de la réponse
+            self.update_status("Law parle", "blue")
             play_audio("results/testLaw.wav")
             
             # Total
@@ -157,11 +241,31 @@ def main():
 
             chat_history.append("User : "+user_text)
             chat_history.append("You (Law) : "+law_response)
+            self.update_status("Prêt", "green")
 
-    except KeyboardInterrupt:
-        print("\nAmadeus s'éteint")
+        except KeyboardInterrupt:
+            print("\nAmadeus s'éteint")
+        
 
 if __name__ == "__main__":
     vad_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad', model='silero_vad', force_reload=False)
     (get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
-    main()
+    #main()
+    chat_history = []
+    print("chargement des modèles")
+
+    STT_model = load_STT_model()
+    STT_processor = load_STT_processor()
+    print("STT chargé")
+
+    TG_model = load_TG_model()
+    TG_tokenizer = load_TG_tokenizer()
+    print("TG chargé")
+
+    TTS_model = load_TTS_model()
+    print("TTS chargé")
+
+    print("Système Amadeus activé.")
+    print("Appuyez sur Ctrl+C pour arrêter.")
+    app = LawAssistantGUI()
+    app.mainloop()
