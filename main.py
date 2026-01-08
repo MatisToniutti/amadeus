@@ -12,6 +12,8 @@ import mss
 from PIL import Image
 import customtkinter as ctk
 import threading
+import psutil
+import pynvml
 
 def play_audio(filename):
     """Lecture simple d'un fichier audio"""
@@ -187,6 +189,58 @@ class LawAssistantGUI(ctk.CTk):
 
         # Bind de la touche Espace
         self.bind('<space>', lambda event: self.start_conversation_thread())
+
+        # Initialisation de NVIDIA Management Library
+        try:
+            pynvml.nvmlInit()
+            self.handle = pynvml.nvmlDeviceGetHandleByIndex(0) # Ton GPU 0
+            self.gpu_ready = True
+        except:
+            self.gpu_ready = False
+
+        # --- UI ELEMENTS ---
+        self.label_title = ctk.CTkLabel(self, text="Système Status", font=("Helvetica", 18, "bold"))
+        self.label_title.pack(pady=10)
+
+        # RAM Système
+        self.ram_label = ctk.CTkLabel(self, text="RAM: 0%")
+        self.ram_label.pack()
+        self.ram_bar = ctk.CTkProgressBar(self, width=300)
+        self.ram_bar.pack(pady=5)
+
+        # VRAM (GPU)
+        self.vram_label = ctk.CTkLabel(self, text="VRAM: 0MB / 0MB")
+        self.vram_label.pack()
+        self.vram_bar = ctk.CTkProgressBar(self, width=300)
+        self.vram_bar.pack(pady=5)
+
+        # Lancer la boucle de mise à jour
+        self.update_stats()
+
+    def update_stats(self):
+        # 1. RAM Système
+        ram = psutil.virtual_memory()
+        self.ram_label.configure(text=f"RAM Système: {ram.percent}%")
+        self.ram_bar.set(ram.percent / 100)
+
+        # 2. VRAM NVIDIA
+        if self.gpu_ready:
+            info = pynvml.nvmlDeviceGetMemoryInfo(self.handle)
+            used_gb = info.used / 1024**3
+            total_gb = info.total / 1024**3
+            percent = (info.used / info.total)
+            
+            self.vram_label.configure(text=f"VRAM: {used_gb:.2f}GB / {total_gb:.2f}GB")
+            self.vram_bar.set(percent)
+            
+            # Alerte couleur si > 90%
+            if percent > 0.9:
+                self.vram_bar.configure(progress_color="red")
+            else:
+                self.vram_bar.configure(progress_color="#1f538d")
+
+        # Rappeler cette fonction dans 1000ms (1 seconde)
+        self.after(1000, self.update_stats)
 
     def update_status(self, new_status, color):
         self.status = new_status
