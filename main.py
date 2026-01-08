@@ -21,47 +21,66 @@ def play_audio(filename):
         sd.wait()
 
 def record_audio():
-    """Version robuste pour PipeWire sans ROOT"""
-    # 1. Configuration des fréquences
-    target_fs = 16000 # Fréquence standard pour le STT (Whisper/Wav2Vec)
-    duration = 3      # Durée fixe de 3 secondes comme tu le voulais
+    target_fs = 16000
     filename = "results/input_user.wav"
     
-    # Créer le dossier results s'il n'existe pas
-    if not os.path.exists("results"):
-        os.makedirs("results")
-
     print("\n--- PRÊT À ÉCOUTER ---")
-    input("Appuyez sur ENTRÉE pour parler pendant 3 secondes...")
+    input("Appuyez sur ENTRÉE pour commencer à parler...")
 
-    try:
-        # 2. Capture audio
-        # On laisse sounddevice choisir le 'device=None' (par défaut PipeWire)
-        print("Enregistrement en cours... (3s)")
-        recording = sd.rec(int(duration * target_fs), samplerate=target_fs, channels=1, dtype='float32')
-        sd.wait()
-        
-        # 3. Traitement et Normalisation
-        max_vol = np.max(np.abs(recording))
-        
-        if max_vol < 0.001:
-            print("!!! Aucun son détecté. Vérifiez votre micro dans pavucontrol.")
-        else:
-            # Normalisation pour que le STT comprenne bien
-            recording = recording / max_vol
-        
-        # 4. Conversion en Int16 pour le format WAV standard
-        audio_int16 = (recording * 32767).astype(np.int16)
-        
-        # 5. Sauvegarde
-        write(filename, target_fs, audio_int16)
-        print(f"Enregistrement terminé et sauvegardé.")
-        
-        return filename
+    recording = []
+    # Paramètres de détection
+    CHUNK_SIZE = 512 # Nombre de samples par morceau (doit être 512, 1024 ou 1536 pour Silero)
+    SILENCE_LIMIT = 1 # Secondes de silence avant de couper
+    
+    silence_counter = 0
+    speech_detected = False
 
-    except Exception as e:
-        print(f"Erreur lors de l'enregistrement : {e}")
-        return None
+    print("Écoute en cours... Parlez maintenant.")
+
+    # Ouverture du flux micro
+    with sd.InputStream(samplerate=target_fs, channels=1, dtype='float32', blocksize=CHUNK_SIZE) as stream:
+        while True:
+            # Lire un morceau d'audio
+            audio_chunk, overflowed = stream.read(CHUNK_SIZE)
+            recording.append(audio_chunk)
+            
+            # Transformer en tenseur pour le modèle VAD
+            tensor_chunk = torch.from_numpy(audio_chunk.flatten())
+            
+            # Obtenir la probabilité que ce soit de la parole (0 à 1)
+            speech_prob = vad_model(tensor_chunk, target_fs).item()
+            
+            if speech_prob > 0.5: # Seuil de détection de parole
+                if not speech_detected:
+                    print("● Parole détectée...")
+                speech_detected = True
+                silence_counter = 0 # Reset le compteur de silence
+            elif speech_detected:
+                silence_counter += CHUNK_SIZE / target_fs
+                
+            # Si on a détecté de la parole PUIS un long silence : on s'arrête
+            if speech_detected and silence_counter > SILENCE_LIMIT:
+                print("Fin de parole détectée.")
+                break
+            
+            # Sécurité : si rien n'est dit après 5 secondes, on annule
+            if not speech_detected and len(recording) * CHUNK_SIZE / target_fs > 5:
+                print("Aucun son détecté, fermeture.")
+                return None
+
+    # Assemblage et sauvegarde
+    audio_full = np.concatenate(recording, axis=0)
+    
+    # Normalisation
+    max_vol = np.max(np.abs(audio_full))
+    if max_vol > 0:
+        audio_full = audio_full / max_vol
+        
+    audio_int16 = (audio_full * 32767).astype(np.int16)
+    write(filename, target_fs, audio_int16)
+    
+    return filename
+
 
 def main():
     chat_history = []
@@ -118,8 +137,9 @@ def main():
             print(f"Temps de réponse total de Law : {total_latency:.2f}s\n\n")
 
     except KeyboardInterrupt:
-        print("\nAmadeus s'éteint. Au revoir, Chapeau de paille.")
+        print("\nAmadeus s'éteint")
 
 if __name__ == "__main__":
-    # Plus besoin de sudo !
+    vad_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad', model='silero_vad', force_reload=False)
+    (get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
     main()
