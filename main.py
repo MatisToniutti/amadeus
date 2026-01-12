@@ -184,8 +184,11 @@ class LawAssistantGUI(ctk.CTk):
         self.btn_talk.pack(pady=20)
 
         # Indicateur visuel (Le futur logo)
-        self.indicator = ctk.CTkFrame(self, width=50, height=50, fg_color="green")
+        self.indicator = ctk.CTkFrame(self, width=20, height=20, fg_color="green")
         self.indicator.pack(pady=10)
+
+        #la fenêtre reste devant
+        self.attributes('-topmost', True)
 
         # Bind de la touche Espace
         self.bind('<space>', lambda event: self.start_conversation_thread())
@@ -201,6 +204,9 @@ class LawAssistantGUI(ctk.CTk):
         # --- UI ELEMENTS ---
         self.label_title = ctk.CTkLabel(self, text="Système Status", font=("Helvetica", 18, "bold"))
         self.label_title.pack(pady=10)
+
+        self.answer_label = ctk.CTkLabel(self, text="", font=("Helvetica", 16))
+        self.answer_label.pack(pady=10)
 
         # RAM Système
         self.ram_label = ctk.CTkLabel(self, text="RAM: 0%")
@@ -274,6 +280,7 @@ class LawAssistantGUI(ctk.CTk):
             # 3. Text Generation
             start_llm = time.perf_counter()
             law_response = textGeneration(user_text, model = TG_model, tokenizer= TG_tokenizer, chat_history=chat_history, img = screenshot)
+            self.answer_label.configure(text=law_response)
             end_llm = time.perf_counter()
             
             print(f"Law : {law_response} ({end_llm - start_llm:.2f}s)\n")
