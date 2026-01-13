@@ -35,7 +35,7 @@ def speechToText(audio, model, processor):
     return result["text"]
 
 if __name__ == "__main__":
-    sampleEn = "./samples/en.mp3"
-    sampleFr = "./samples/fr.mp3"
-    law = "./samples/shortLawVoice.mp3"
+    sampleEn = "./data/samples/en.mp3"
+    sampleFr = "./data/samples/fr.mp3"
+    law = "./data/samples/shortLawVoice.mp3"
     print(speechToText(law))

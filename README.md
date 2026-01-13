@@ -1,7 +1,7 @@
 
 # Amadeus: Multimodal Desktop Assistant
 
-Amadeus est un assistant personnel local combinant vision, audition et parole. Le projet repose sur l'intégration de modèles que j'essaie d'optimiset pour fonctionner simultanément localement sur une seule interface graphique.
+Amadeus est un assistant personnel local combinant vision, audition et parole. Le projet repose sur l'intégration de modèles que j'essaie d'optimiser pour fonctionner simultanément localement sur une seule interface graphique.
 
 🚀 **Caractéristiques**
 * Pipeline Multimodal : Intégration complète de la transcription (STT), de la réflexion (LLM/Vision) et de la synthèse vocale (TTS).
@@ -27,4 +27,4 @@ Amadeus est un assistant personnel local combinant vision, audition et parole. L
 
 📦 **Installation & Setup**
 
-Pas prévu pour l'instant
+Pas prévus pour l'instant

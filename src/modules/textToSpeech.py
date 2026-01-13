@@ -9,8 +9,8 @@ from TTS.api import TTS
 #     return model
 
 # def textToSpeech(text, model):
-#     save_file = "results/testLaw.wav"
-#     AUDIO_PROMPT_PATH="samples/shortLawVoice.mp3"
+#     save_file = "data/results/testLaw.wav"
+#     AUDIO_PROMPT_PATH="data/samples/shortLawVoice.mp3"
 #     wav = model.generate(text, audio_prompt_path=AUDIO_PROMPT_PATH, language_id = "ja")
 #     ta.save(save_file, wav, model.sr)
 #     return save_file
@@ -20,8 +20,8 @@ def load_TTS_model():
     return model
 
 def textToSpeech(text, model):
-    save_file = "results/testLaw.wav"
-    AUDIO_PROMPT_PATH="samples/shortLawVoice.mp3"
+    save_file = "data/results/testLaw.wav"
+    AUDIO_PROMPT_PATH="data/samples/shortLawVoice.mp3"
     wav = model.generate(text, audio_prompt_path=AUDIO_PROMPT_PATH)
     ta.save(save_file, wav, model.sr)
     return save_file
@@ -31,8 +31,8 @@ def textToSpeech(text, model):
 #     return model
 
 # def textToSpeech(text, model):
-#     save_file = "results/testLaw.wav"
-#     AUDIO_PROMPT_PATH="samples/shortLawVoice.mp3"
+#     save_file = "data/results/testLaw.wav"
+#     AUDIO_PROMPT_PATH="data/samples/shortLawVoice.mp3"
 #     model.tts_to_file(text=text,
 #                 file_path=save_file,
 #                 speaker_wav=AUDIO_PROMPT_PATH,

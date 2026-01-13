@@ -1,3 +1,6 @@
 .venv/
 .env
 notes.txt
+results/
+__pycache__/
+src/__pycache__/
