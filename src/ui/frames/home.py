@@ -3,48 +3,46 @@ import threading
 import psutil
 import pynvml
 
-
-class LawAssistantGUI(ctk.CTk):
-    def __init__(self, engine):
-        super().__init__()
+class HomeFrame(ctk.CTkFrame):
+    def __init__(self, master, engine, show_settings_callback):
+        super().__init__(master)
         self.engine = engine
 
-        self.title("Amadeus")
-        self.geometry("400x600")
-        #la fenêtre reste devant
-        self.attributes('-topmost', True)
-        
+        self.header_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.header_frame.pack(fill="x", padx=10, pady=(10,0))
+
         self.status = "Chargement des modèles"
         
-        # --- Interface ---
+        # status
         self.label_status = ctk.CTkLabel(self, text=f"État : {self.status}", font=("Helvetica", 18))
         self.label_status.pack(pady=20)
 
-        # Bouton Principal (On l'utilisera pour déclencher la boucle)
+        # bouton paramètres
+        self.btn_settings = ctk.CTkButton(
+            self.header_frame,
+            text="⚙️",
+            width=40,
+            fg_color="transparent",
+            border_width=1,
+            text_color=("gray10","#DCE4EE"),
+            command=show_settings_callback
+        )
+        self.btn_settings.pack(side="right")
+
+
+        # Bouton Principal
         self.btn_talk = ctk.CTkButton(self, text="PARLER (ESPACE)", command=self.start_conversation_thread)
         self.btn_talk.pack(pady=20)
 
-        # Indicateur visuel (Le futur logo)
+        # Indicateur visuel
         self.indicator = ctk.CTkFrame(self, width=20, height=20, fg_color="red")
         self.indicator.pack(pady=10)
 
-        # Bind de la touche Espace
-        self.bind('<space>', lambda event: self.start_conversation_thread())
-
-        # Initialisation de NVIDIA Management Library
-        try:
-            pynvml.nvmlInit()
-            self.handle = pynvml.nvmlDeviceGetHandleByIndex(0) # Ton GPU 0
-            self.gpu_ready = True
-        except:
-            self.gpu_ready = False
-
-        # --- UI ELEMENTS ---
-        self.label_title = ctk.CTkLabel(self, text="Système Status", font=("Helvetica", 18, "bold"))
-        self.label_title.pack(pady=10)
-
         self.answer_label = ctk.CTkLabel(self, text="", font=("Helvetica", 16))
         self.answer_label.pack(pady=10)
+
+        self.monitoring_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.monitoring_frame.pack(pady=10, fill="x", padx=20)
 
         # RAM Système
         self.ram_label = ctk.CTkLabel(self, text="RAM: 0%")
@@ -58,7 +56,15 @@ class LawAssistantGUI(ctk.CTk):
         self.vram_bar = ctk.CTkProgressBar(self, width=300)
         self.vram_bar.pack(pady=5)
 
-        # Lancer la boucle de mise à jour
+        # Init NVML
+        try:
+            pynvml.nvmlInit()
+            self.handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+            self.gpu_ready = True
+        except:
+            self.gpu_ready = False
+
+        self.monitoring_active = True
         self.update_stats()
 
     def update_stats(self):
@@ -97,3 +103,10 @@ class LawAssistantGUI(ctk.CTk):
         # On lance la logique IA dans un thread séparé pour ne pas bloquer la fenêtre
         thread = threading.Thread(target=self.engine.run_pipeline, args=(self.update_status,))
         thread.start()
+
+    def toggle_monitoring(self, is_visible):
+        self.monitoring_active = is_visible
+        if is_visible:
+            self.monitoring_frame.pack(pady=10, fill="x", padx=20)
+        else:
+            self.monitoring_frame.pack_forget()

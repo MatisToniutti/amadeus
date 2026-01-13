@@ -1,6 +1,6 @@
 import threading
 from src.engine import Engine
-from src.ui.main_window import LawAssistantGUI
+from src.ui.main_ui import LawAssistantGUI
 
 def main():
     engine = Engine()
