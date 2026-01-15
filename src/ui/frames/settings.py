@@ -38,5 +38,6 @@ class SettingsFrame(ctk.CTkFrame):
             text="",
             command=lambda: toggle_monitor_callback(self.switch_monitor.get())
         )
+        #pour qu'il soit activé de base
         self.switch_monitor.select()
         self.switch_monitor.pack(side="right")

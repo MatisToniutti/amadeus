@@ -45,15 +45,15 @@ class HomeFrame(ctk.CTkFrame):
         self.monitoring_frame.pack(pady=10, fill="x", padx=20)
 
         # RAM Système
-        self.ram_label = ctk.CTkLabel(self, text="RAM: 0%")
+        self.ram_label = ctk.CTkLabel(self.monitoring_frame, text="RAM: 0%")
         self.ram_label.pack()
-        self.ram_bar = ctk.CTkProgressBar(self, width=300)
+        self.ram_bar = ctk.CTkProgressBar(self.monitoring_frame, width=300)
         self.ram_bar.pack(pady=5)
 
         # VRAM (GPU)
-        self.vram_label = ctk.CTkLabel(self, text="VRAM: 0MB / 0MB")
+        self.vram_label = ctk.CTkLabel(self.monitoring_frame, text="VRAM: 0MB / 0MB")
         self.vram_label.pack()
-        self.vram_bar = ctk.CTkProgressBar(self, width=300)
+        self.vram_bar = ctk.CTkProgressBar(self.monitoring_frame, width=300)
         self.vram_bar.pack(pady=5)
 
         # Init NVML
