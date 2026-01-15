@@ -4,6 +4,7 @@ from src.modules.speechToText import speechToText, load_STT_model, load_STT_proc
 from src.modules.textGeneration import textGeneration, load_TG_model, load_TG_tokenizer
 from src.modules.textToSpeech import textToSpeech, load_TTS_model
 from src.utils import take_screenshot, record_audio, play_audio
+import gc
 
 class Engine:
     def __init__(self):
@@ -11,6 +12,8 @@ class Engine:
         self.chat_history = []
         self.is_ready = False
         self.volume = 100
+        self.current_TG_model = "google/gemma-3-4b-it"
+        self.available_TG_models = ["google/gemma-3-4b-it","google/gemma-3-1b-it"]
 
     def load_all_models(self):
         """charge tous les modèles de base au démarrage"""
@@ -23,8 +26,8 @@ class Engine:
         self.models["stt_processor"] = load_STT_processor()
         print("STT chargé")
 
-        self.models["tg_model"] = load_TG_model()
-        self.models["tg_tokenizer"] = load_TG_tokenizer()
+        self.models["tg_model"] = load_TG_model(model_id=self.current_TG_model)
+        self.models["tg_tokenizer"] = load_TG_tokenizer(model_id=self.current_TG_model)
         print("TG chargé")
 
         self.models["tts_model"] = load_TTS_model()
@@ -41,7 +44,7 @@ class Engine:
             return
         
         try:
-            screenshot = take_screenshot()
+            screenshot = take_screenshot() if self.current_TG_model == "google/gemma-3-4b-it" else None
 
             # 1. Écoute
             ui_callback("Écoute...", "red")
@@ -68,7 +71,8 @@ class Engine:
                                           model = self.models["tg_model"], 
                                           tokenizer =  self.models["tg_tokenizer"], 
                                           chat_history = self.chat_history, 
-                                          img = screenshot)
+                                          img = screenshot,
+                                          model_id=self.current_TG_model)
             ui_callback("Génération de l'audio...", "orange", law_response)
             end_llm = time.perf_counter()
             
@@ -95,6 +99,17 @@ class Engine:
 
         except KeyboardInterrupt:
             print("\nAmadeus s'éteint")
+
+    def change_TG_model(self, model_id):
+        del self.models["tg_model"]
+        del self.models["tg_tokenizer"]
+
+        gc.collect()
+        torch.cuda.empty_cache()
+
+        self.current_TG_model = model_id
+        self.models["tg_model"] = load_TG_model(model_id=model_id)
+        self.models["tg_tokenizer"] = load_TG_tokenizer(model_id=model_id)
 
     def set_volume(self, volume):
         self.volume = volume

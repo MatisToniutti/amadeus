@@ -27,7 +27,11 @@ class LawAssistantGUI(ctk.CTk):
             go_back_callback=self.show_home,
             toggle_monitor_callback=self.home_frame.toggle_monitoring,
             change_volume_callback = self.engine.set_volume,
-            reset_history_callback = self.engine.reset_history
+            reset_history_callback = self.engine.reset_history,
+
+            current_model = self.engine.current_TG_model,
+            model_list = self.engine.available_TG_models,
+            change_TG_model_callback = self.engine.change_TG_model,
         )
         
         # Bind de la touche Espace

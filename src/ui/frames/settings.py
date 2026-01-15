@@ -6,7 +6,10 @@ class SettingsFrame(ctk.CTkFrame):
                 go_back_callback,
                 toggle_monitor_callback,
                 change_volume_callback,
-                reset_history_callback):
+                reset_history_callback,
+                current_model,
+                model_list,
+                change_TG_model_callback):
         super().__init__(master)
         self.change_volume_callback = change_volume_callback
         self.reset_history_callback = reset_history_callback
@@ -83,6 +86,21 @@ class SettingsFrame(ctk.CTkFrame):
             command=reset_history_callback
         )
         self.btn_reset.pack(fill="x") # prend toute la largeur
+
+        self.row4 = ctk.CTkFrame(self, fg_color="transparent")
+        self.row4.pack(fill="x", padx=20, pady=20)
+
+        self.lbl_TG_model = ctk.CTkLabel(self.row4,
+                                      text="LLM",
+                                      font=("Helvetica",14))
+        self.lbl_TG_model.pack(side="left")
+        self.combo_TG_model = ctk.CTkOptionMenu(
+            self.row4,
+            values=model_list,
+            command=change_TG_model_callback
+        )
+        self.combo_TG_model.set(current_model)
+        self.combo_TG_model.pack(side="right")
 
     def update_volume_event(self, volume):
         self.lbl_vol_value.configure(text=f"{int(volume * 100)}%")
