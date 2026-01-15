@@ -1,9 +1,15 @@
 import customtkinter as ctk
 
 class SettingsFrame(ctk.CTkFrame):
-    def __init__(self, master, go_back_callback, toggle_monitor_callback, change_volume_callback):
+    def __init__(self,
+                master,
+                go_back_callback,
+                toggle_monitor_callback,
+                change_volume_callback,
+                reset_history_callback):
         super().__init__(master)
         self.change_volume_callback = change_volume_callback
+        self.reset_history_callback = reset_history_callback
 
         #Bouton retour
         self.header = ctk.CTkFrame(self, fg_color="transparent")
@@ -64,6 +70,19 @@ class SettingsFrame(ctk.CTkFrame):
         )
         self.slider_vol.set(0.5)
         self.slider_vol.pack(side="right")
+
+        # Option 3 : Reset de l'historique
+        self.row3 = ctk.CTkFrame(self, fg_color="transparent")
+        self.row3.pack(fill="x", padx=20, pady=20)
+
+        self.btn_reset = ctk.CTkButton(
+            self.row3,
+            text = "Rénitialiser l'historique",
+            fg_color="#A83232",
+            hover_color="#7A2424",
+            command=reset_history_callback
+        )
+        self.btn_reset.pack(fill="x") # prend toute la largeur
 
     def update_volume_event(self, volume):
         self.lbl_vol_value.configure(text=f"{int(volume * 100)}%")

@@ -98,3 +98,6 @@ class Engine:
 
     def set_volume(self, volume):
         self.volume = volume
+
+    def reset_history(self):
+        self.chat_history = []
