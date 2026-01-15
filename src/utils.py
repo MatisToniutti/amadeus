@@ -5,26 +5,25 @@ import mss
 from PIL import Image
 import numpy as np
 from scipy.io.wavfile import write
+import soundfile as sf
 
 
+def play_audio(filename, volume=100):
 
-def play_audio(filename):
-    """Lecture simple d'un fichier audio"""
     try:
-        # On utilise aplay (standard Linux) pour éviter les conflits de flux
-        os.system(f"aplay {filename}")
-    except:
-        import soundfile as sf
         data, fs = sf.read(filename)
-        sd.play(data, fs)
-        sd.wait()
+    
+        audio_with_volume = data * float(volume)/100
+
+        sd.play(audio_with_volume, fs)
+        sd.wait() # Attend la fin de la lecture
+        
+    except Exception as e:
+        print(f"Erreur lors de la lecture audio : {e}")
 
 def record_audio(vad_model):
     target_fs = 16000
     filename = "data/results/input_user.wav"
-    
-    # print("\n--- PRÊT À ÉCOUTER ---")
-    # input("Appuyez sur ENTRÉE pour commencer à parler...")
 
     recording = []
     # Paramètres de détection

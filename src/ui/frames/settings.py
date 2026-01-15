@@ -1,8 +1,9 @@
 import customtkinter as ctk
 
 class SettingsFrame(ctk.CTkFrame):
-    def __init__(self, master, go_back_callback, toggle_monitor_callback):
+    def __init__(self, master, go_back_callback, toggle_monitor_callback, change_volume_callback):
         super().__init__(master)
+        self.change_volume_callback = change_volume_callback
 
         #Bouton retour
         self.header = ctk.CTkFrame(self, fg_color="transparent")
@@ -41,3 +42,29 @@ class SettingsFrame(ctk.CTkFrame):
         #pour qu'il soit activé de base
         self.switch_monitor.select()
         self.switch_monitor.pack(side="right")
+
+        # Option 2 : Volume
+        self.row2 = ctk.CTkFrame(self, fg_color="transparent")
+        self.row2.pack(fill="x", padx=20, pady=10)
+
+        self.lbl_vol = ctk.CTkLabel(self.row2,
+                                    text="Volume",
+                                    font=("Helvetica",14))
+        self.lbl_vol.pack(side="left")
+
+        self.lbl_vol_value = ctk.CTkLabel(self.row2, text="50%", width=40)
+        self.lbl_vol_value.pack(side="right", padx=(10, 0))
+
+        self.slider_vol = ctk.CTkSlider(
+            self.row2,
+            from_=0,
+            to=1,
+            number_of_steps=100,
+            command=self.update_volume_event
+        )
+        self.slider_vol.set(0.5)
+        self.slider_vol.pack(side="right")
+
+    def update_volume_event(self, volume):
+        self.lbl_vol_value.configure(text=f"{int(volume * 100)}%")
+        self.change_volume_callback(volume*200)

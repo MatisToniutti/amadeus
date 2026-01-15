@@ -10,6 +10,7 @@ class Engine:
         self.models = {}
         self.chat_history = []
         self.is_ready = False
+        self.volume = 100
 
     def load_all_models(self):
         """charge tous les modèles de base au démarrage"""
@@ -82,7 +83,7 @@ class Engine:
 
             # 5. Lecture de la réponse
             ui_callback("Law parle", "blue")
-            play_audio("data/results/testLaw.wav")
+            play_audio("data/results/testLaw.wav", volume=self.volume)
             
             # Total
             total_latency = (end_stt - start_stt) + (end_llm - start_llm) + (end_tts - start_tts)
@@ -94,3 +95,6 @@ class Engine:
 
         except KeyboardInterrupt:
             print("\nAmadeus s'éteint")
+
+    def set_volume(self, volume):
+        self.volume = volume
