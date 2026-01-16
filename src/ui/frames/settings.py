@@ -74,19 +74,15 @@ class SettingsFrame(ctk.CTkFrame):
         self.slider_vol.set(0.5)
         self.slider_vol.pack(side="right")
 
-        # Option 3 : Reset de l'historique
-        self.row3 = ctk.CTkFrame(self, fg_color="transparent")
-        self.row3.pack(fill="x", padx=20, pady=20)
-
-        self.btn_reset = ctk.CTkButton(
-            self.row3,
-            text = "Rénitialiser l'historique",
-            fg_color="#A83232",
-            hover_color="#7A2424",
-            command=reset_history_callback
+        # Titre de section modèles dans les paramètres
+        self.lbl_section_models = ctk.CTkLabel(
+            self, 
+            text="Modèles", 
+            font=("Helvetica", 16, "bold")
         )
-        self.btn_reset.pack(fill="x") # prend toute la largeur
+        self.lbl_section_models.pack(pady=(20, 0))
 
+        # Option 3 : Reset de l'historique
         self.row4 = ctk.CTkFrame(self, fg_color="transparent")
         self.row4.pack(fill="x", padx=20, pady=20)
 
@@ -101,6 +97,18 @@ class SettingsFrame(ctk.CTkFrame):
         )
         self.combo_TG_model.set(current_model)
         self.combo_TG_model.pack(side="right")
+
+        self.row5 = ctk.CTkFrame(self, fg_color="transparent")
+        self.row5.pack(fill="x", padx=20, pady=20)
+
+        self.btn_reset = ctk.CTkButton(
+            self.row5,
+            text = "Rénitialiser l'historique",
+            fg_color="#A83232",
+            hover_color="#7A2424",
+            command=reset_history_callback
+        )
+        self.btn_reset.pack(fill="x") # prend toute la largeur
 
     def update_volume_event(self, volume):
         self.lbl_vol_value.configure(text=f"{int(volume * 100)}%")
