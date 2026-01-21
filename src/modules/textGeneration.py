@@ -2,6 +2,7 @@ from transformers import AutoTokenizer, BitsAndBytesConfig, Gemma3ForCausalLM, A
 import torch
 from dotenv import load_dotenv
 import os
+from transformers import AutoModelForCausalLM, AutoTokenizer, TextStreamer
 
 
 def load_TG_model(model_id= "google/gemma-3-4b-it"):
@@ -12,13 +13,22 @@ def load_TG_model(model_id= "google/gemma-3-4b-it"):
             model_id,
             quantization_config=quantization_config,
             dtype=torch.bfloat16,
-            device_map="auto"
+            device_map="auto",
+            attn_implementation="sdpa"
         ).eval()
     elif model_id == "google/gemma-3-1b-it":
         model = Gemma3ForCausalLM.from_pretrained(
             model_id,
             dtype=torch.bfloat16,
-            device_map="auto"
+            device_map="auto",
+            attn_implementation="sdpa"
+        ).eval()
+    elif model_id == "LiquidAI/LFM2.5-1.2B-Instruct":
+        model = AutoModelForCausalLM.from_pretrained(
+            model_id,
+            device_map="auto",
+            dtype="bfloat16",
+            attn_implementation="sdpa"
         ).eval()
     else:
         print("Nom de modèle non reconnu.")
@@ -27,7 +37,7 @@ def load_TG_model(model_id= "google/gemma-3-4b-it"):
 def load_TG_tokenizer(model_id = "google/gemma-3-4b-it"):
     if model_id == "google/gemma-3-4b-it": 
         processor = AutoProcessor.from_pretrained(model_id)
-    elif model_id == "google/gemma-3-1b-it":
+    elif model_id in ["google/gemma-3-1b-it","LiquidAI/LFM2.5-1.2B-Instruct"]:
         processor = AutoTokenizer.from_pretrained(model_id)
     return processor
 
@@ -68,7 +78,7 @@ def textGeneration(prompt,
                 },
             ],
         ]
-    elif model_id == "google/gemma-3-1b-it":
+    elif model_id in ["google/gemma-3-1b-it"]:
         messages = [
             [
                 {
@@ -85,6 +95,21 @@ def textGeneration(prompt,
                 },
             ],
         ]
+    elif model_id in ["LiquidAI/LFM2.5-1.2B-Instruct"]:
+        messages = [
+                        {
+                            "role": "system",
+                            "content": """
+                                        You are Trafalgar Law from One Piece but as a woman as you are under the effects of the Shiku Shiku no Mi, you are my personnal desktop assistant. IMPORTANT CONSTRAINTS: Write ONLY the spoken dialogue.
+                                        NEVER include descriptions of your actions, tone of voice, or surroundings (no parentheses or asterisks).
+                                        Keep your responses concise and cynical, as per Law's personality, but follow the orders like a good assistant and answer in english.
+                                        Do not use emojis or stage directions.""" + history_prompt 
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt
+                        },
+                    ]
     else:
         print("Nom de modèle non reconnu.")
 

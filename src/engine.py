@@ -12,8 +12,8 @@ class Engine:
         self.chat_history = []
         self.is_ready = False
         self.volume = 100
-        self.current_TG_model = "google/gemma-3-4b-it"
-        self.available_TG_models = ["google/gemma-3-4b-it","google/gemma-3-1b-it"]
+        self.current_TG_model = "google/gemma-3-1b-it"
+        self.available_TG_models = ["google/gemma-3-4b-it","google/gemma-3-1b-it","LiquidAI/LFM2.5-1.2B-Instruct"]
 
     def load_all_models(self):
         """charge tous les modèles de base au démarrage"""
