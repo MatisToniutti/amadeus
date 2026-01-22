@@ -12,8 +12,12 @@ class Engine:
         self.chat_history = []
         self.is_ready = False
         self.volume = 100
-        self.current_TG_model = "google/gemma-3-1b-it"
-        self.available_TG_models = ["google/gemma-3-4b-it","google/gemma-3-1b-it","LiquidAI/LFM2.5-1.2B-Instruct"]
+        self.current_models = {
+            "tg":"LiquidAI/LFM2.5-1.2B-Instruct"
+            }
+        self.available_models = {
+            "tg": ["google/gemma-3-4b-it","google/gemma-3-1b-it","LiquidAI/LFM2.5-1.2B-Instruct"]
+        }
 
     def load_all_models(self):
         """charge tous les modèles de base au démarrage"""
@@ -26,8 +30,8 @@ class Engine:
         self.models["stt_processor"] = load_STT_processor()
         print("STT chargé")
 
-        self.models["tg_model"] = load_TG_model(model_id=self.current_TG_model)
-        self.models["tg_tokenizer"] = load_TG_tokenizer(model_id=self.current_TG_model)
+        self.models["tg_model"] = load_TG_model(model_id=self.current_models["tg"])
+        self.models["tg_tokenizer"] = load_TG_tokenizer(model_id=self.current_models["tg"])
         print("TG chargé")
 
         self.models["tts_model"] = load_TTS_model()
@@ -44,7 +48,7 @@ class Engine:
             return
         
         try:
-            screenshot = take_screenshot() if self.current_TG_model == "google/gemma-3-4b-it" else None
+            screenshot = take_screenshot() if self.current_models["tg"] == "google/gemma-3-4b-it" else None
 
             # 1. Écoute
             ui_callback("Écoute...", "red")
@@ -72,7 +76,7 @@ class Engine:
                                           tokenizer =  self.models["tg_tokenizer"], 
                                           chat_history = self.chat_history, 
                                           img = screenshot,
-                                          model_id=self.current_TG_model)
+                                          model_id=self.current_models["tg"])
             ui_callback("Génération de l'audio...", "orange", law_response)
             end_llm = time.perf_counter()
             
@@ -107,7 +111,7 @@ class Engine:
         gc.collect()
         torch.cuda.empty_cache()
 
-        self.current_TG_model = model_id
+        self.current_models["tg"] = model_id
         self.models["tg_model"] = load_TG_model(model_id=model_id)
         self.models["tg_tokenizer"] = load_TG_tokenizer(model_id=model_id)
 

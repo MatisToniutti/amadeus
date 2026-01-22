@@ -8,7 +8,11 @@ def load_STT_model():
     model_id = "openai/whisper-large-v3-turbo"
 
     model = AutoModelForSpeechSeq2Seq.from_pretrained(
-        model_id, dtype=torch_dtype, low_cpu_mem_usage=True, use_safetensors=True
+        model_id,
+        dtype=torch_dtype,
+        low_cpu_mem_usage=True,
+        use_safetensors=True,
+        attn_implementation="sdpa"
     )
     model.to(device)
     return model

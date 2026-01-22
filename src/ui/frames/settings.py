@@ -7,8 +7,8 @@ class SettingsFrame(ctk.CTkFrame):
                 toggle_monitor_callback,
                 change_volume_callback,
                 reset_history_callback,
-                current_model,
-                model_list,
+                current_models,
+                models_list,
                 change_TG_model_callback):
         super().__init__(master)
         self.change_volume_callback = change_volume_callback
@@ -92,10 +92,10 @@ class SettingsFrame(ctk.CTkFrame):
         self.lbl_TG_model.pack(side="left")
         self.combo_TG_model = ctk.CTkOptionMenu(
             self.row4,
-            values=model_list,
+            values=models_list["tg"],
             command=change_TG_model_callback
         )
-        self.combo_TG_model.set(current_model)
+        self.combo_TG_model.set(current_models["tg"])
         self.combo_TG_model.pack(side="right")
 
         self.row5 = ctk.CTkFrame(self, fg_color="transparent")

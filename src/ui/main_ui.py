@@ -29,8 +29,8 @@ class LawAssistantGUI(ctk.CTk):
             change_volume_callback = self.engine.set_volume,
             reset_history_callback = self.engine.reset_history,
 
-            current_model = self.engine.current_TG_model,
-            model_list = self.engine.available_TG_models,
+            current_models = self.engine.current_models,
+            models_list = self.engine.available_models,
             change_TG_model_callback = self.engine.change_TG_model,
         )
         
