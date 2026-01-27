@@ -1,9 +1,7 @@
-from transformers import AutoTokenizer, BitsAndBytesConfig, Gemma3ForCausalLM, AutoProcessor, Gemma3ForConditionalGeneration
+from transformers import AutoTokenizer, BitsAndBytesConfig, Gemma3ForCausalLM, AutoProcessor, Gemma3ForConditionalGeneration, AutoModelForCausalLM, AutoTokenizer
 import torch
 from dotenv import load_dotenv
 import os
-from transformers import AutoModelForCausalLM, AutoTokenizer, TextStreamer
-
 
 def load_TG_model(model_id= "google/gemma-3-4b-it"):
     if model_id == "google/gemma-3-4b-it":
