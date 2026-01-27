@@ -1,8 +1,5 @@
 import torchaudio as ta
-from chatterbox.tts import ChatterboxTTS
-from chatterbox.mtl_tts import ChatterboxMultilingualTTS
 from chatterbox.tts_turbo import ChatterboxTurboTTS
-from TTS.api import TTS
 
 # def load_TTS_model():
 #     model = ChatterboxMultilingualTTS.from_pretrained(device="cuda")
