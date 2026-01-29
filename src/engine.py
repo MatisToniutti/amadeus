@@ -1,10 +1,8 @@
 import torch
 import time
 from src.utils import take_screenshot, record_audio, play_audio
-import gc
 import subprocess
 import requests
-import json
 
 class Engine:
     def __init__(self):
@@ -13,10 +11,10 @@ class Engine:
         self.is_ready = False
         self.volume = 100
         self.current_models = {
-            "tg":"LiquidAI/LFM2.5-1.2B-Instruct"
+            "tg":"lfm2.5-1.2b-instruct"
             }
         self.available_models = {
-            "tg": ["google/gemma-3-4b-it","google/gemma-3-1b-it","LiquidAI/LFM2.5-1.2B-Instruct"]
+            "tg": ["gemma-3-4b-it","gemma-3-1b-it","lfm2.5-1.2b-instruct"]
         }
 
     def start_base_services(self):
@@ -28,30 +26,39 @@ class Engine:
 
         """Lance Whisper et le TTS"""
         print("Démarrage des services de base...")
-        subprocess.run(["docker", "compose", "--profile", "base", "up", "-d"])
+        subprocess.run(["docker", "compose", "--profile", "base", "--profile", "lfm2.5-1.2b-instruct", "up", "-d"])
 
         self.is_ready = True
         print("Système Amadeus activé.")
         print("Appuyez sur Ctrl+C pour arrêter.")
 
-    def switch_model(self, model_name):
+    def switch_model(self, new_model, type="tg"):
         """
         Change le modèle LLM actif.
-        model_name: 'gemma' ou 'liquid' (correspond au nom du profil dans le yaml)
+        new_model: correspond au nom du profil dans le yaml
         """
-        print(f"🛑 Arrêt des autres LLMs...")
-        # On arrête tous les conteneurs qui ne sont pas le nouveau modèle
-        # (Pour faire simple, ici on coupe gemma si on veut liquid, et vice-versa)
-        if model_name == "liquid":
-            subprocess.run(["docker", "stop", "mon_gemma"])
-        elif model_name == "gemma":
-            subprocess.run(["docker", "stop", "mon_liquid"])
+        print(f"🛑 Arrêt de l'ancien modèle...")
+        subprocess.run(["docker", "stop", self.current_models[type]])
+        new_model = new_model.strip()
 
-        print(f"🚀 Démarrage du profil : {model_name}")
-        subprocess.run(["docker", "compose", "--profile", model_name, "up", "-d"])
+        print(f"🚀 Démarrage du modèle : {new_model}")
+        cmd = [
+            "docker", "compose",
+            "--profile", "base",
+            "--profile", new_model,
+            "up", "-d", "--remove-orphans"
+        ]
+        subprocess.run(cmd)
         
         # On attend que le service réponde (Healthcheck basique)
-        self.wait_for_service(port=8001 if model_name == "gemma" else 8002)
+        type_to_port = {
+            "tg":8001,
+            "tts":8004,
+            "stt":8003
+        }
+        self.wait_for_service(port=type_to_port[type])
+
+        self.current_models[type] = new_model
 
     def wait_for_service(self, port):
         """Boucle d'attente jusqu'à ce que le conteneur soit prêt"""

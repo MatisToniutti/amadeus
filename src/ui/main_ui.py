@@ -31,7 +31,7 @@ class LawAssistantGUI(ctk.CTk):
 
             current_models = self.engine.current_models,
             models_list = self.engine.available_models,
-            change_TG_model_callback = None,
+            change_model_callback = self.engine.switch_model,
         )
         
         # Bind de la touche Espace

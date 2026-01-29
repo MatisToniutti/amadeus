@@ -14,7 +14,7 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    profiles: ["base"]
+    profiles: ["lfm2.5-1.2b-instruct"]
 
   gemma-3-1b-it:
     build: ./services/tg/gemma-3-1b-it
@@ -31,7 +31,7 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    profiles: ["gemma"]
+    profiles: ["gemma-3-1b-it"]
 
   whisper-large-v3-turbo:
     build: ./services/stt/whisper-large-v3-turbo
