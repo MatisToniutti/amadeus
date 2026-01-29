@@ -22,6 +22,8 @@ Amadeus est un assistant personnel local combinant vision, audition et parole. L
 
 * Traitement de données : PyTorch, PIL (Image processing), SoundDevice (Audio).
 
+* Microservices : Utilisation de Docker, FastAPI et Uvicorn afin de faire tourner chaque modèle individuellement sur un conteneur en local.
+
 * Hardware : Optimisé pour NVIDIA (CUDA).
 
 
