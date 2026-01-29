@@ -1,10 +1,10 @@
 import torch
 import time
-from src.modules.speechToText import speechToText, load_STT_model, load_STT_processor
-from src.modules.textGeneration import textGeneration, load_TG_model, load_TG_tokenizer
-from src.modules.textToSpeech import textToSpeech, load_TTS_model
 from src.utils import take_screenshot, record_audio, play_audio
 import gc
+import subprocess
+import requests
+import json
 
 class Engine:
     def __init__(self):
@@ -19,27 +19,53 @@ class Engine:
             "tg": ["google/gemma-3-4b-it","google/gemma-3-1b-it","LiquidAI/LFM2.5-1.2B-Instruct"]
         }
 
-    def load_all_models(self):
+    def start_base_services(self):
         """charge tous les modèles de base au démarrage"""
         print("Chargement des modèles")
 
         self.models["vad_model"], _ = torch.hub.load(repo_or_dir='snakers4/silero-vad', model='silero_vad', force_reload=False)
         print("Voice detection chargé")
 
-        self.models["stt_model"] = load_STT_model()
-        self.models["stt_processor"] = load_STT_processor()
-        print("STT chargé")
-
-        self.models["tg_model"] = load_TG_model(model_id=self.current_models["tg"])
-        self.models["tg_tokenizer"] = load_TG_tokenizer(model_id=self.current_models["tg"])
-        print("TG chargé")
-
-        self.models["tts_model"] = load_TTS_model()
-        print("TTS chargé")
+        """Lance Whisper et le TTS"""
+        print("Démarrage des services de base...")
+        subprocess.run(["docker", "compose", "--profile", "base", "up", "-d"])
 
         self.is_ready = True
         print("Système Amadeus activé.")
         print("Appuyez sur Ctrl+C pour arrêter.")
+
+    def switch_model(self, model_name):
+        """
+        Change le modèle LLM actif.
+        model_name: 'gemma' ou 'liquid' (correspond au nom du profil dans le yaml)
+        """
+        print(f"🛑 Arrêt des autres LLMs...")
+        # On arrête tous les conteneurs qui ne sont pas le nouveau modèle
+        # (Pour faire simple, ici on coupe gemma si on veut liquid, et vice-versa)
+        if model_name == "liquid":
+            subprocess.run(["docker", "stop", "mon_gemma"])
+        elif model_name == "gemma":
+            subprocess.run(["docker", "stop", "mon_liquid"])
+
+        print(f"🚀 Démarrage du profil : {model_name}")
+        subprocess.run(["docker", "compose", "--profile", model_name, "up", "-d"])
+        
+        # On attend que le service réponde (Healthcheck basique)
+        self.wait_for_service(port=8001 if model_name == "gemma" else 8002)
+
+    def wait_for_service(self, port):
+        """Boucle d'attente jusqu'à ce que le conteneur soit prêt"""
+        url = f"http://localhost:{port}/docs" # Endpoint FastAPI par défaut
+        for _ in range(30): # Essai pendant 30s
+            try:
+                response = requests.get(url)
+                if response.status_code == 200:
+                    print(f"✅ Service sur le port {port} est prêt !")
+                    return
+            except requests.ConnectionError:
+                pass
+            time.sleep(1)
+        print("⚠️ Le service met du temps à démarrer...")
 
     def run_pipeline(self, ui_callback):
         """Réalise une boucle complète d'interaction"""
@@ -60,9 +86,7 @@ class Engine:
             # 2. Speech to Text
             start_stt = time.perf_counter()
             ui_callback("Transcription...", "orange")
-            user_text = speechToText(audio = audio_path, 
-                                     model = self.models["stt_model"],
-                                     processor = self.models["stt_processor"])
+            user_text = self.query_stt(audio_path = audio_path)
             end_stt = time.perf_counter()
             
             print(f"Toi : {user_text} ({end_stt - start_stt:.2f}s)\n")
@@ -71,12 +95,10 @@ class Engine:
             # 3. Text Generation
             start_llm = time.perf_counter()
             ui_callback("Génération du texte...", "orange")
-            law_response = textGeneration(user_text, 
-                                          model = self.models["tg_model"], 
-                                          tokenizer =  self.models["tg_tokenizer"], 
-                                          chat_history = self.chat_history, 
-                                          img = screenshot,
-                                          model_id=self.current_models["tg"])
+            law_response = self.query_llm(
+                                    prompt=user_text,  
+                                    history = self.chat_history, 
+                                    )
             ui_callback("Génération de l'audio...", "orange", law_response)
             end_llm = time.perf_counter()
             
@@ -84,7 +106,7 @@ class Engine:
 
             # 4. Text to Speech
             start_tts = time.perf_counter()
-            textToSpeech(law_response, self.models["tts_model"])
+            self.query_tts(text=law_response)
             end_tts = time.perf_counter()
             
             print(f"Génération Audio : {end_tts - start_tts:.2f}s\n")
@@ -104,16 +126,45 @@ class Engine:
         except KeyboardInterrupt:
             print("\nAmadeus s'éteint")
 
-    def change_TG_model(self, model_id):
-        del self.models["tg_model"]
-        del self.models["tg_tokenizer"]
-
-        gc.collect()
-        torch.cuda.empty_cache()
-
-        self.current_models["tg"] = model_id
-        self.models["tg_model"] = load_TG_model(model_id=model_id)
-        self.models["tg_tokenizer"] = load_TG_tokenizer(model_id=model_id)
+    def query_llm(self, prompt, history, model_port=8001):
+        url = f"http://localhost:{model_port}/generate"
+        payload = {
+            "prompt": prompt,
+            "chat_history": history
+        }
+        
+        try:
+            response = requests.post(url, json=payload)
+            #raise une erreur si le status correspond à une erreur
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            return f"Erreur de communication avec le cerveau : {e}"
+        
+    def query_stt(self, audio_path, model_port=8003):
+        url = f"http://localhost:{model_port}/speechToText"
+        payload = {
+            "audio": audio_path
+        }
+        try:
+            response = requests.post(url, json=payload)
+            response.raise_for_status()
+            
+            return response.json()["text"]
+        except Exception as e:
+            return f"Erreur de communication avec le cerveau : {e}"
+        
+    def query_tts(self, text, model_port=8004):
+        url = f"http://localhost:{model_port}/textToSpeech"
+        payload = {
+            "text": text
+        }
+        try:
+            response = requests.post(url, json=payload)
+            response.raise_for_status()
+            return response.json()["text"]
+        except Exception as e:
+            return f"Erreur de communication avec le cerveau : {e}"
 
     def set_volume(self, volume):
         self.volume = volume

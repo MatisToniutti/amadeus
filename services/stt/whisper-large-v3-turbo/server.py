@@ -36,9 +36,9 @@ async def speechToText(query: Query):
         raise HTTPException(status_code=503, detail="Modèle non chargé")
     
     # Gestion du chemin du fichier (Volume Docker)
-    filename = os.path.basename(query.audio)
-    internal_path = os.path.join("/app/data", filename)
-    
+    cleaned_path = query.audio.replace("data/", "").lstrip("/")
+    internal_path = os.path.join("/app/data", cleaned_path)
+    #internal_path = "app/data/results/input_user.wav"
     if not os.path.exists(internal_path):
         raise HTTPException(status_code=404, detail=f"Audio introuvable ici : {internal_path}")
 
@@ -52,6 +52,7 @@ async def speechToText(query: Query):
         feature_extractor=processor.feature_extractor, 
         torch_dtype=torch_dtype,
         device=device,
+        chunk_length_s=30
     )
 
     # return_timestamps=True aide parfois à stabiliser la sortie

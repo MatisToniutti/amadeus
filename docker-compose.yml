@@ -1,0 +1,70 @@
+services:
+  lfm2.5-1.2b-instruct:
+    build: ./services/tg/lfm2.5-1.2b-instruct
+    container_name: lfm2.5-1.2b-instruct
+    ports:
+      - "8001:8000"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    env_file: .env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    profiles: ["base"]
+
+  gemma-3-1b-it:
+    build: ./services/tg/gemma-3-1b-it
+    container_name: gemma-3-1b-it
+    ports:
+      - "8001:8000"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    env_file: .env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    profiles: ["gemma"]
+
+  whisper-large-v3-turbo:
+    build: ./services/stt/whisper-large-v3-turbo
+    container_name: whisper-large-v3-turbo
+    ports:
+      - "8003:8000"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+      - ./data:/app/data  # Partage du dossier data local
+    env_file: .env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    profiles: ["base"]
+
+  tts:
+    build: ./services/tts/chatterbox-turbo
+    container_name: chatterbox-turbo
+    ports:
+      - "8004:8000"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+      - ./data:/app/data
+    env_file: .env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    profiles: ["base"]

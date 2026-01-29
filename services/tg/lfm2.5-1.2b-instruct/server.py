@@ -34,7 +34,7 @@ async def load_model():
 async def generate(query: Query):
     if not model:
         raise HTTPException(status_code=503, detail="Modèle non chargé")
-    
+    print(query.prompt)
     history_prompt = ""
 
     if len(query.chat_history)>0:

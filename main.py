@@ -7,7 +7,7 @@ def main():
     app = LawAssistantGUI(engine=engine)
 
     def loading_task():
-        engine.load_all_models()
+        engine.start_base_services()
         app.update_status("Prêt", "green")
 
     loader = threading.Thread(target = loading_task)
