@@ -3,4 +3,5 @@ uvicorn
 transformers
 accelerate
 pydantic
-PIL
+Pillow
+bitsandbytes

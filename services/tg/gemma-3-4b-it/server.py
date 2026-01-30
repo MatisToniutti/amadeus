@@ -15,7 +15,7 @@ tokenizer = None
 class Query(BaseModel):
     prompt: str
     chat_history: list = []
-    image: Image = None
+    image: str | None = None
 
 @app.on_event("startup")
 async def load_model():
@@ -24,7 +24,7 @@ async def load_model():
     print(f"--- Initialisation du service {MODEL_ID} ---")
         
     tokenizer = AutoProcessor.from_pretrained(MODEL_ID, token=token)
-    quantization_config = BitsAndBytesConfig(load_in_8bit=True)
+    quantization_config = BitsAndBytesConfig(load_in_4bit=True)
     model = Gemma3ForConditionalGeneration.from_pretrained(
         MODEL_ID,
         quantization_config=quantization_config,

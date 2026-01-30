@@ -86,7 +86,7 @@ class Engine:
             # 1. Écoute
             ui_callback("Écoute...", "red")
             audio_path = record_audio(vad_model=self.models["vad_model"])
-            if not audio_path: # Si VAD n'a rien entendu ou arrêt
+            if not audio_path: # Si VAD n'a rien entendu
                 ui_callback("Prêt", "green", "")
                 return
 
@@ -105,6 +105,7 @@ class Engine:
             law_response = self.query_llm(
                                     prompt=user_text,  
                                     history = self.chat_history, 
+                                    image = screenshot
                                     )
             ui_callback("Génération de l'audio...", "orange", law_response)
             end_llm = time.perf_counter()
@@ -133,12 +134,14 @@ class Engine:
         except KeyboardInterrupt:
             print("\nAmadeus s'éteint")
 
-    def query_llm(self, prompt, history, model_port=8001):
+    def query_llm(self, prompt, history, image = None, model_port=8001):
         url = f"http://localhost:{model_port}/generate"
         payload = {
             "prompt": prompt,
             "chat_history": history
         }
+        if image:
+            payload["img"] = image
         
         try:
             response = requests.post(url, json=payload)

@@ -33,6 +33,23 @@ services:
               capabilities: [gpu]
     profiles: ["gemma-3-1b-it"]
 
+  gemma-3-4b-it:
+    build: ./services/tg/gemma-3-4b-it
+    container_name: gemma-3-4b-it
+    ports:
+      - "8001:8000"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    env_file: .env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    profiles: ["gemma-3-4b-it"]
+
   whisper-large-v3-turbo:
     build: ./services/stt/whisper-large-v3-turbo
     container_name: whisper-large-v3-turbo
