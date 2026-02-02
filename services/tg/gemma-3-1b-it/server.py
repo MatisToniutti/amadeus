@@ -4,6 +4,7 @@ import torch
 from transformers import AutoTokenizer, Gemma3ForCausalLM
 import uvicorn
 import os
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
 
 app = FastAPI()
 

@@ -82,7 +82,8 @@ class SettingsFrame(ctk.CTkFrame):
         )
         self.lbl_section_models.pack(pady=(20, 0))
 
-        # Option 3 : Reset de l'historique
+        #changement de modèles
+        #TG
         self.row4 = ctk.CTkFrame(self, fg_color="transparent")
         self.row4.pack(fill="x", padx=20, pady=20)
 
@@ -98,11 +99,29 @@ class SettingsFrame(ctk.CTkFrame):
         self.combo_TG_model.set(current_models["tg"])
         self.combo_TG_model.pack(side="right")
 
+        #TTS
         self.row5 = ctk.CTkFrame(self, fg_color="transparent")
         self.row5.pack(fill="x", padx=20, pady=20)
 
-        self.btn_reset = ctk.CTkButton(
+        self.lbl_TTS_model = ctk.CTkLabel(self.row5,
+                                      text="TTS",
+                                      font=("Helvetica",14))
+        self.lbl_TTS_model.pack(side="left")
+        self.combo_TTS_model = ctk.CTkOptionMenu(
             self.row5,
+            values=models_list["tts"],
+            command=lambda value, t="tts": change_model_callback(value, type=t)
+        )
+        self.combo_TTS_model.set(current_models["tts"])
+        self.combo_TTS_model.pack(side="right")
+
+        # Option 3 : Reset de l'historique
+
+        self.row6 = ctk.CTkFrame(self, fg_color="transparent")
+        self.row6.pack(fill="x", padx=20, pady=20)
+
+        self.btn_reset = ctk.CTkButton(
+            self.row6,
             text = "Rénitialiser l'historique",
             fg_color="#A83232",
             hover_color="#7A2424",

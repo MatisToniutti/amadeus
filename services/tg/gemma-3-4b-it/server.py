@@ -5,6 +5,7 @@ from transformers import Gemma3ForConditionalGeneration, BitsAndBytesConfig, Aut
 import uvicorn
 import os
 from PIL import Image
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
 
 app = FastAPI()
 

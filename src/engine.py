@@ -11,10 +11,12 @@ class Engine:
         self.is_ready = False
         self.volume = 100
         self.current_models = {
-            "tg":"lfm2.5-1.2b-instruct"
+            "tg":"lfm2.5-1.2b-instruct",
+            "tts":"chatterbox-turbo"
             }
         self.available_models = {
-            "tg": ["gemma-3-4b-it","gemma-3-1b-it","lfm2.5-1.2b-instruct"]
+            "tg": ["gemma-3-4b-it","gemma-3-1b-it","lfm2.5-1.2b-instruct"],
+            "tts": ["chatterbox-turbo", "qwen3-tts"]
         }
 
     def start_base_services(self):
@@ -26,7 +28,7 @@ class Engine:
 
         """Lance Whisper et le TTS"""
         print("Démarrage des services de base...")
-        subprocess.run(["docker", "compose", "--profile", "base", "--profile", "lfm2.5-1.2b-instruct", "up", "-d"])
+        subprocess.run(["docker", "compose", "--profile", "base", "--profile", "lfm2.5-1.2b-instruct", "--profile", "chatterbox-turbo", "up", "-d"])
 
         self.is_ready = True
         print("Système Amadeus activé.")

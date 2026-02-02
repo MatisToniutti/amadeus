@@ -1,5 +1,5 @@
 # On utilise l'image officielle de PyTorch (déjà configurée pour NVIDIA)
-FROM pytorch/pytorch:2.9.1-cuda13.0-cudnn9-runtime
+FROM pytorch/pytorch:2.6.0-cuda12.6-cudnn9-runtime
 
 WORKDIR /app
 
